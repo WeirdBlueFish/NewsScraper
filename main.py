@@ -11,14 +11,29 @@ import csv
 
 websites = [
     {
-        "name" : "Sky Sports Football",
+        "category" : "Football",
         "url" : "https://www.skysports.com/football/news"
     },
-
     {
-        "name" : "Sky Sports F1",
+        "category" : "F1",
         "url" : "https://www.skysports.com/f1/news"
-    }
+    },
+    {
+        "category" : "Golf",
+        "url" : "https://www.skysports.com/golf/news"
+    },
+    {
+        "category" : "Racing",
+        "url" : "https://www.skysports.com/racing/news"
+    },
+    {
+        "category" : "NFL",
+        "url" : "https://www.skysports.com/nfl/news"
+    },
+    {
+        "category" : "Tennis",
+        "url" : "https://www.skysports.com/tennis/news"
+    },
 ]
 
 headers = {
@@ -51,7 +66,7 @@ async def fetch_data(url):
     return None
     
 
-def scrape_data(response):
+def scrape_data(response, category):
     if not response:
         return []
     
@@ -73,7 +88,7 @@ def scrape_data(response):
             if link.startswith('/'):
                 link = 'https://www.skysports.com' + link
 
-            news.append([headline, link])
+            news.append([category, headline, link])
 
     return news            
 
@@ -83,17 +98,17 @@ def scrape_data(response):
 async def main():
     with open("news.csv", 'w', newline='', encoding='utf-8') as writer:
         writer = csv.writer(writer)
-        writer.writerow(['Title', 'Link'])
+        writer.writerow(['Categorycategory' ,'Title', 'Link'])
 
         tasks = [fetch_data(site['url']) for site in websites]
 
         html_responses = await asyncio.gather(*tasks)
 
-        for html in html_responses:
+        for site, html in zip(websites, html_responses):
             if html:
-                extracted_news = scrape_data(html)
-                for news in extracted_news:
-                    writer.writerow([news[0], news[1]])
+                extracted_news = scrape_data(html, site['category'])
+                for news_item in extracted_news:
+                    writer.writerow(news_item)
 
         print(f"all data saved in news.csv")
 
