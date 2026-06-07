@@ -22,7 +22,7 @@ headers = {
 # Base:
 
 def fetch_data(url):
-    with httpx.Client(timeout=10.0) as c:
+    with httpx.Client(headers=headers ,timeout=10.0) as c:
         try:
             print(f"fetching data...")
 
