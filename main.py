@@ -1,8 +1,9 @@
 #_______________
 # Imports:
 
-import httpx
 from bs4 import BeautifulSoup
+import asyncio
+import httpx
 import csv
 
 #_______________
@@ -10,8 +11,13 @@ import csv
 
 websites = [
     {
-        "name" : "Sky Sports",
+        "name" : "Sky Sports Football",
         "url" : "https://www.skysports.com/football/news"
+    },
+
+    {
+        "name" : "Sky Sports F1",
+        "url" : "https://www.skysports.com/f1/news"
     }
 ]
 
@@ -22,34 +28,36 @@ headers = {
 #_______________
 # Base:
 
-def fetch_data(url):
-    with httpx.Client(headers=headers ,timeout=10.0) as c:
+async def fetch_data(url):
+    async with httpx.AsyncClient(headers=headers ,timeout=10.0) as c:
         try:
-            print(f"fetching data...")
+            print(f"🔄 Fetching data from: {url}")
 
-            response = c.get(url)
+            response = await c.get(url)
 
             response.raise_for_status()
 
-            print(f"html successfully fetched.")
-            
             return response.text
 
         except httpx.HTTPError as exc:
-            return f"Http Error: {exc}"
+            print(f"Http Error: {exc}")
         
         except httpx.RequestError as exc:
-            return f"Connection Error: {exc}"
+            print(f"Connection Error: {exc}") 
         
         except httpx.NetworkError as exc:
-            return f"Network Error: {exc}"
+            print(f"Network Error: {exc}")
+
+    return None
     
 
 def scrape_data(response):
+    if not response:
+        return []
+    
     data = BeautifulSoup(response, 'html.parser')
 
     newses = data.find_all('div', class_='sdc-site-tile')
-    print(f"{len(newses)} news found.")
 
     news = []
     for index, item in enumerate(newses, 1):
@@ -72,12 +80,22 @@ def scrape_data(response):
 #_______________
 # Run:
 
-if __name__ == "__main__":
+async def main():
     with open("news.csv", 'w', newline='', encoding='utf-8') as writer:
         writer = csv.writer(writer)
         writer.writerow(['Title', 'Link'])
 
-        newses = scrape_data(fetch_data(websites[0]['url']))
+        tasks = [fetch_data(site['url']) for site in websites]
 
-        for news in newses:
-            writer.writerow([news[0], news[1]])
+        html_responses = await asyncio.gather(*tasks)
+
+        for html in html_responses:
+            if html:
+                extracted_news = scrape_data(html)
+                for news in extracted_news:
+                    writer.writerow([news[0], news[1]])
+
+        print(f"all data saved in news.csv")
+
+if __name__ == "__main__":
+    asyncio.run(main())
