@@ -21,8 +21,8 @@ Before running the script, make sure you have Python 3.7+ installed. Then, insta
 ## 🚀 How to Run
 
 1. Clone this repository to your local machine:
-   `git clone https://github.com/yourusername/sky-sports-scraper.git`
-   `cd sky-sports-scraper`
+   `git clone https://github.com/WeirdBlueFish/NewsScraper.git`
+   `cd NewsScraper`
 
 2. Run the Python script:
    `python main.py`
