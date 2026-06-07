@@ -3,6 +3,7 @@
 
 import httpx
 from bs4 import BeautifulSoup
+import csv
 
 #_______________
 # Setting:
@@ -49,8 +50,8 @@ def scrape_data(response):
 
     newses = data.find_all('div', class_='sdc-site-tile')
     print(f"{len(newses)} news found.")
-    print(f"Scraped News: \n")
 
+    news = []
     for index, item in enumerate(newses, 1):
         # پیدا کردن تگ تیتر داخل این کارت خبر
         headline_tag = item.find('span', class_='sdc-site-tile__headline-text')
@@ -64,13 +65,19 @@ def scrape_data(response):
             if link.startswith('/'):
                 link = 'https://www.skysports.com' + link
 
-            print(f"{index}. ⚽ {headline}")
-            print(f"🔗 Link: {link}")
-            print("-" * 40)
+            news.append([headline, link])
+
+    return news            
 
 #_______________
 # Run:
 
 if __name__ == "__main__":
-    r = fetch_data(websites[0]['url'])
-    scrape_data(r)
+    with open("news.csv", 'w', newline='', encoding='utf-8') as writer:
+        writer = csv.writer(writer)
+        writer.writerow(['Title', 'Link'])
+
+        newses = scrape_data(fetch_data(websites[0]['url']))
+
+        for news in newses:
+            writer.writerow([news[0], news[1]])
