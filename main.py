@@ -76,19 +76,20 @@ def scrape_data(response, category):
 
     news = []
     for index, item in enumerate(newses, 1):
-        # پیدا کردن تگ تیتر داخل این کارت خبر
-        headline_tag = item.find('span', class_='sdc-site-tile__headline-text')
-        # پیدا کردن تگ لینک داخل این کارت خبر
-        link_tag = item.find('a', class_='sdc-site-tile__headline-link')
 
-        if headline_tag and link_tag:
+        headline_tag = item.find('span', class_='sdc-site-tile__headline-text')
+        link_tag = item.find('a', class_='sdc-site-tile__headline-link')
+        img_tag = item.find('img', class_='sdc-site-tile__image')
+        img_link = img_tag.get('src') if img_tag else "https://via.placeholder.com/300"
+
+        if headline_tag and link_tag and img_tag:
             headline = headline_tag.text.strip()
             link = link_tag.get('href')
 
             if link.startswith('/'):
                 link = 'https://www.skysports.com' + link
 
-            news.append([category, headline, link])
+            news.append([category, headline, link, img_link])
 
     return news            
 
@@ -98,7 +99,7 @@ def scrape_data(response, category):
 async def main():
     with open("news.csv", 'w', newline='', encoding='utf-8') as writer:
         writer = csv.writer(writer)
-        writer.writerow(['Categorycategory' ,'Title', 'Link'])
+        writer.writerow(['Category' ,'Title', 'Link', 'Image'])
 
         tasks = [fetch_data(site['url']) for site in websites]
 
